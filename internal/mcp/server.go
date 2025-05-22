@@ -2,7 +2,10 @@ package mcp
 
 import (
     "context"
+    "encoding/base64"
     "fmt"
+    "os"
+    "path/filepath"
 
     "github.com/mark3labs/mcp-go/mcp"
     "github.com/mark3labs/mcp-go/server"
@@ -12,7 +15,7 @@ import (
 func McpServer() {
     // Create a new MCP server
     s := server.NewMCPServer(
-        "Calculator Demo",
+        "AWS Diagram as Code",
         "1.0.0",
         server.WithToolCapabilities(false),
         server.WithRecovery(),
@@ -70,6 +73,48 @@ func McpServer() {
         }
 
         return mcp.NewToolResultText(fmt.Sprintf("%.2f", result)), nil
+    })
+
+    // Add image tool
+    imageTool := mcp.NewTool("image",
+        mcp.WithDescription("Load and return an image file"),
+        mcp.WithString("path",
+            mcp.Required(),
+            mcp.Description("Path to the image file"),
+        ),
+    )
+
+    // Add the image handler
+    s.AddTool(imageTool, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+        // Get the image path
+        imagePath, err := request.RequireString("path")
+        if err != nil {
+            return mcp.NewToolResultError(err.Error()), nil
+        }
+
+        // Read the image file
+        imageData, err := os.ReadFile(imagePath)
+        if err != nil {
+            return mcp.NewToolResultError(fmt.Sprintf("Failed to read image: %v", err)), nil
+        }
+
+        // Encode the image as base64
+        base64Data := base64.StdEncoding.EncodeToString(imageData)
+        
+        // Determine MIME type based on file extension
+        mimeType := "image/png" // Default
+        ext := filepath.Ext(imagePath)
+        switch ext {
+        case ".jpg", ".jpeg":
+            mimeType = "image/jpeg"
+        case ".gif":
+            mimeType = "image/gif"
+        case ".svg":
+            mimeType = "image/svg+xml"
+        }
+        
+        // Return the image as a data URL
+        return mcp.NewToolResultImage("Image loaded successfully", base64Data, mimeType), nil
     })
 
     // Start the server
