@@ -1,0 +1,11 @@
+{
+  "version": "1.0",
+  "mcpServers": {
+    "mcp_golang": {
+      "description": "MCP Server",
+      "command": "/home/ubuntu/diagram-as-code.git/awsdac",
+      "args": ["--mcp"]
+    }
+  }
+}
+
