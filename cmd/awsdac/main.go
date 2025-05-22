@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/awslabs/diagram-as-code/internal/ctl"
+	mcpserver "github.com/awslabs/diagram-as-code/internal/mcp"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -22,6 +23,7 @@ func main() {
 	var generateDacFile bool
 	var overrideDefFile string
 	var isGoTemplate bool
+	var useMcp bool
 
 	var rootCmd = &cobra.Command{
 		Use:     "awsdac <input filename>",
@@ -30,6 +32,10 @@ func main() {
 		Long:    "This command line interface (CLI) tool enables drawing infrastructure diagrams for Amazon Web Services through YAML code.",
 		Args:    cobra.MaximumNArgs(1),
 		PreRunE: func(cmd *cobra.Command, args []string) error {
+			// MCPモードの場合は入力ファイルは不要
+			if useMcp {
+				return nil
+			}
 
 			if len(args) == 0 {
 				error_message := "awsdac: This tool requires an input file to run. Please provide a file path.\n"
@@ -52,11 +58,16 @@ func main() {
 
 		},
 		Run: func(cmd *cobra.Command, args []string) {
-
 			if verbose {
 				log.SetLevel(log.InfoLevel)
 			} else {
 				log.SetLevel(log.WarnLevel)
+			}
+
+			// MCPモードが指定されている場合はMCPサーバーを実行
+			if useMcp {
+				mcpserver.McpServer()
+				return
 			}
 
 			inputFile := args[0]
@@ -83,6 +94,7 @@ func main() {
 	rootCmd.PersistentFlags().BoolVarP(&generateDacFile, "dac-file", "d", false, "[beta] Generate YAML file in dac (diagram-as-code) format from CloudFormation template")
 	rootCmd.PersistentFlags().StringVarP(&overrideDefFile, "override-def-file", "", "", "For testing purpose, override DefinitionFiles to another url/local file")
 	rootCmd.PersistentFlags().BoolVarP(&isGoTemplate, "template", "t", false, "Processes the input file as a template according to text/template.")
+	rootCmd.PersistentFlags().BoolVarP(&useMcp, "mcp", "", false, "Run MCP server mode")
 
 
 	rootCmd.Execute()

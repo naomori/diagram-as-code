@@ -1,0 +1,11 @@
+{
+  "version": "1.0",
+  "mcpServers": {
+    "calculator": {
+      "description": "Calculator MCP Server",
+      "command": "/home/ubuntu/diagram-as-code.git/awsdac",
+      "args": ["--mcp"]
+    }
+  }
+}
+
