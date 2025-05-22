@@ -1,8 +1,8 @@
 {
   "version": "1.0",
   "mcpServers": {
-    "calculator": {
-      "description": "Calculator MCP Server",
+    "diagram_as_code": {
+      "description": "diagram-as-code MCP Server",
       "command": "/home/ubuntu/diagram-as-code.git/awsdac",
       "args": ["--mcp"]
     }
